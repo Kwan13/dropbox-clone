@@ -34,10 +34,23 @@ class DropBoxController {
         this.inputFilesEl.addEventListener('change', event => {
 
             this.modalShow()
-            this.uploadTask(event.target.files);
+            this.uploadTask(event.target.files).then(responses => {
+
+                responses.forEach(resp => {
+                    this.getFirebaseRef().push().set(resp.files['input-file']);
+                });
+
+            }).catch(err => {
+                reject(err)
+                console.error(err);
+            });
 
         });
 
+    }
+
+    getFirebaseRef() {
+        return firebase.database().ref('files');
     }
 
     modalShow(show = true) {

@@ -6,9 +6,24 @@ class DropBoxController {
         this.fileNameEl = this.snackbarModalEl.querySelector('.filename');
         this.timeLeftEl = this.snackbarModalEl.querySelector('.timeleft');
         this.inputFilesEl = document.querySelector('#files');
+        this.connectToFirebase();
         this.initEvents();
     }
 
+    connectToFirebase() {
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyBiuhu-1TotGPpvEm5B7pzuf4qhuHFm7Tk",
+            authDomain: "dropbox-clone-52852.firebaseapp.com",
+            databaseURL: "https://dropbox-clone-52852.firebaseio.com",
+            projectId: "dropbox-clone-52852",
+            storageBucket: "dropbox-clone-52852.appspot.com",
+            messagingSenderId: "563009566058",
+            appId: "1:563009566058:web:df4c87bd490b5750ad2113"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    }
 
     initEvents() {
 
@@ -43,9 +58,9 @@ class DropBoxController {
 
                 ajax.onload = event => {
                     this.modalShow(false);
-                    try{
+                    try {
                         resolve(JSON.parse(ajax.responseText))
-                    }catch(err){
+                    } catch (err) {
                         reject(err)
                         console.error(err);
                     }
@@ -93,15 +108,15 @@ class DropBoxController {
         let minutes = parseInt((duration / (1000 * 60)) % 60);
         let hours = parseInt((duration / (1000 * 60 * 60)) % 24);
 
-        if(hours > 0) {
+        if (hours > 0) {
             return `${hours} horas, ${minutes} minutos e ${seconds} segundos`
         }
 
-        if(minutes > 0) {
+        if (minutes > 0) {
             return `${minutes} minutos e ${seconds} segundos`
         }
 
-        if(seconds > 0) {
+        if (seconds > 0) {
             return `${seconds} segundos`
         }
 

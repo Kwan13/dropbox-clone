@@ -135,10 +135,19 @@ class DropBoxController {
             this.btnSendFileEl.disabled = true;
 
             this.uploadTask(event.target.files).then(responses => {
-                this.uploadComplete();
+
                 responses.forEach(resp => {
-                    this.getFirebaseRef().push().set(resp.files['input-file']);
+
+                    this.getFirebaseRef().push().set({
+                        name: resp.name,
+                        type: resp.contentType,
+                        path: resp.customMetadata.downloadURL,
+                        size: resp.size
+                    });
+
                 });
+
+                this.uploadComplete();
 
             }).catch(err => {
                 reject(err)
@@ -206,13 +215,34 @@ class DropBoxController {
 
         [...files].forEach(file => {
 
-            let formData = new FormData();
-            formData.append('input-file', file);
+            promises.push(new Promise((resolve, reject) => {
 
-            promises.push(this.ajax('/upload', 'POST', formData, () => {
-                this.uploadProgress(event, file);
-            }, () => {
-                this.startUploadTime = Date.now();
+                let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);
+
+                let task = fileRef.put(file);
+
+                task.on('state_changed', snapshot => {
+                    this.uploadProgress({
+                        loaded: snapshot.bytesTransferred,
+                        total: snapshot.totalBytes
+                    }, file);
+                }, error => {
+                    console.error(error);
+                    reject(error);
+                }, () => {
+
+                    task.snapshot.ref.getDownloadURL().then(downloadURL => {
+
+                        task.snapshot.ref.updateMetadata({ customMetadata: { downloadURL } }).then(metadata => {
+                            resolve(metadata);
+                        });
+
+                    }).catch(err => {
+                        reject(err);
+                    });
+
+                });
+
             }));
 
         });
